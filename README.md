@@ -1,7 +1,4 @@
 
-# Data
-Google Drive https://drive.google.com/drive/folders/1TwT9z6N6SJadsVkDhSNVBiF9ZygEyA6l
-
 # Cross-Space Synergy for Multimodal Emotion Recognition in Conversation
 
 This repository contains the official implementation of our paper [Cross-Space Synergy: A Unified Framework for Multimodal Emotion Recognition in Conversation](https://ojs.aaai.org/index.php/AAAI/article/view/39602).
