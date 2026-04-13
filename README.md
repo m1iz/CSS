@@ -46,7 +46,7 @@ python train_IEMOCAP.py
 python train_MELD.py
 ```
 ## Acknowledgements
-Special thanks to the authors of [SDT](https://github.com/butterfliesss/SDT?tab=readme-ov-file) for sharing their codes and datasets.
+Special thanks to the authors of [SDT](https://github.com/butterfliesss/SDT?tab=readme-ov-file) for open-sourcing their code and datasets.
 
 
 ## Citation
