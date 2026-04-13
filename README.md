@@ -3,7 +3,7 @@
 
 This repository contains the official implementation of our paper [Cross-Space Synergy: A Unified Framework for Multimodal Emotion Recognition in Conversation](https://ojs.aaai.org/index.php/AAAI/article/view/39602).
 
-We hope our work can be helpful to your. As this code is mainly developed for research and experimental purposes, there may still be room for improvement in terms of implementation and organization. If you have any questions, suggestions, or find any issues, please feel free to contact us or open an issue.
+We hope our work can be helpful to you. As this code is mainly developed for research and experimental purposes, there may still be room for improvement in terms of implementation and organization. If you have any questions, suggestions, or find any issues, please feel free to contact us or open an issue.
 
 ## Requirements
 
@@ -48,7 +48,7 @@ python train_IEMOCAP.py
 python train_MELD.py
 ```
 ## Acknowledgements
-Special thanks to the authors of [SDT](https://github.com/butterfliesss/SDT?tab=readme-ov-file) for open-sourcing their code and datasets.
+Special thanks to the authors of [SDT](https://github.com/butterfliesss/SDT?tab=readme-ov-file) for open-sourcing their code and datasets. 🤗🤗🤗
 
 
 ## Citation
