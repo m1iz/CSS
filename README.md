@@ -3,6 +3,8 @@
 
 This repository contains the official implementation of our paper [Cross-Space Synergy: A Unified Framework for Multimodal Emotion Recognition in Conversation](https://ojs.aaai.org/index.php/AAAI/article/view/39602).
 
+We hope our work can be helpful to your. As this code is mainly developed for research and experimental purposes, there may still be room for improvement in terms of implementation and organization. If you have any questions, suggestions, or find any issues, please feel free to contact us or open an issue.
+
 ## Requirements
 
 The required Python packages are listed in `requirements.txt`. Please install them before running the code:
