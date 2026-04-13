@@ -5,6 +5,11 @@ This repository contains the official implementation of our paper [Cross-Space S
 
 We hope our work can be helpful to you. As this code is mainly developed for research and experimental purposes, there may still be room for improvement in terms of implementation and organization. If you have any questions, suggestions, or find any issues, please feel free to contact us or open an issue.
 
+<h2>Framework of CSS</h2>
+<p align="center">
+  <img src="data/CSS_main.png" alt="Framework" width="80%">
+</p>
+
 ## Requirements
 
 The required Python packages are listed in `requirements.txt`. Please install them before running the code:
