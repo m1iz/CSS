@@ -23,7 +23,19 @@ data/meld_multimodal_features.pkl
 ```
 The features are derived from [SDT](https://github.com/butterfliesss/SDT?tab=readme-ov-file). We thank the authors of SDT for making this line of research possible.
 
+## Project Structure
 
+```text
+.
+├── dataloader.py
+├── model.py
+├── train_IEMOCAP.py
+├── train_MELD.py
+├── requirements.txt
+└── data/
+    ├── iemocap_multimodal_features.pkl
+    ├── meld_multimodal_features.pkl
+```
 
 ## Run
 
@@ -34,17 +46,6 @@ python train_IEMOCAP.py
 python train_MELD.py
 ```
 
-## Project Structure
-
-```text
-.
-├── dataloader.py
-├── model.py
-├── train_IEMOCAP.py
-├── requirements.txt
-└── data/
-    ├── iemocap_multimodal_features.pkl
-```
 
 ## Citation
 If you find this work helpful to your research, please consider citing our paper. Thank you!
