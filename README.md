@@ -21,7 +21,7 @@ After downloading, please place the files in the `data/` directory:
 data/iemocap_multimodal_features.pkl
 data/meld_multimodal_features.pkl
 ```
-The features are derived from [SDT](https://github.com/butterfliesss/SDT?tab=readme-ov-file). We thank the authors of SDT for making this line of research possible.
+The features are derived from [SDT](https://github.com/butterfliesss/SDT?tab=readme-ov-file).
 
 ## Project Structure
 
@@ -45,6 +45,8 @@ You can train the model by running the corresponding training script:
 python train_IEMOCAP.py
 python train_MELD.py
 ```
+## Acknowledgements
+Special thanks to the authors of [SDT](https://github.com/butterfliesss/SDT?tab=readme-ov-file) for sharing their codes and datasets.
 
 
 ## Citation
