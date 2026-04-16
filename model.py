@@ -341,16 +341,6 @@ class TransformerSingleEncoder(nn.Module):
         return x_b
 
 
-class FusionGate(nn.Module):
-    def __init__(self, hidden_size):
-        super(FusionGate, self).__init__()
-        self.fc = nn.Linear(hidden_size, hidden_size, bias=False)
-
-    def forward(self, a):
-        z = torch.sigmoid(self.fc(a))
-        final_rep = z * a
-        return final_rep
-
 class TransformerEncoder(nn.Module):
     def __init__(self, d_model, d_ff, heads, layers, dropout=0.1):
         super(TransformerEncoder, self).__init__()
