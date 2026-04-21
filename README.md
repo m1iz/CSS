@@ -1,5 +1,5 @@
 
-# Cross-Space Synergy for Multimodal Emotion Recognition in Conversation
+# Cross-Space Synergy: A Unified Framework for Multimodal Emotion Recognition in Conversation
 
 This repository contains the official implementation of our paper [Cross-Space Synergy: A Unified Framework for Multimodal Emotion Recognition in Conversation](https://ojs.aaai.org/index.php/AAAI/article/view/39602).
 
