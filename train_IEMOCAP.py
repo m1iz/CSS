@@ -2,7 +2,6 @@ import os
 
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 
-os.environ["CUDA_VISIBLE_DEVICES"] = "1"
 
 import matplotlib.pyplot as plt
 from sklearn.manifold import TSNE
@@ -187,6 +186,33 @@ def train_or_eval_model(model, loss_function, kl_loss, dataloader, epoch, optimi
     return avg_loss, avg_accuracy, labels, preds, masks, avg_fscore
 
 
+def evaluate_loaded_model(model, dataloader):
+    preds, labels, masks = [], [], []
+    model.eval()
+
+    with torch.no_grad():
+        for data in dataloader:
+            textf, visuf, acouf, qmask, umask, label = [d.cuda() for d in data[:-1]] if cuda else data[:-1]
+            qmask = qmask.permute(1, 0, 2)
+            lengths = [(umask[j] == 1).nonzero().tolist()[-1][0] + 1 for j in range(len(umask))]
+
+            outputs = model(textf, visuf, acouf, umask, qmask, lengths)
+            all_prob = outputs[4]
+            pred_ = torch.argmax(all_prob.view(-1, all_prob.size()[2]), 1)
+
+            preds.append(pred_.data.cpu().numpy())
+            labels.append(label.view(-1).data.cpu().numpy())
+            masks.append(umask.view(-1).cpu().numpy())
+
+    preds = np.concatenate(preds)
+    labels = np.concatenate(labels)
+    masks = np.concatenate(masks)
+    avg_accuracy = round(accuracy_score(labels, preds, sample_weight=masks) * 100, 2)
+    avg_fscore = round(f1_score(labels, preds, sample_weight=masks, average='weighted') * 100, 2)
+
+    return avg_accuracy, labels, preds, masks, avg_fscore
+
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--no-cuda', action='store_true', default=False, help='does not use GPU')
@@ -203,9 +229,17 @@ if __name__ == '__main__':
     parser.add_argument('--tensorboard', action='store_true', default=False, help='Enables tensorboard log')
     parser.add_argument('--class-weight', action='store_true', default=True, help='use class weights')
     parser.add_argument('--Dataset', default='IEMOCAP', help='dataset to train and test')
+    parser.add_argument('--seed', type=int, default=61078, help='random seed')
+    parser.add_argument('--save-best-dir', default='checkpoints', help='directory for best checkpoint')
+    parser.add_argument('--run-name', default=None, help='checkpoint name prefix')
+    parser.add_argument('--checkpoint', default=None, help='checkpoint path to load')
+    parser.add_argument('--eval-only', action='store_true', default=False, help='only evaluate a loaded checkpoint')
 
     args = parser.parse_args()
+    set_seed(args.seed)
     today = datetime.datetime.now()
+    if args.run_name is None:
+        args.run_name = '{}_seed{}'.format(args.Dataset.lower(), args.seed)
     print(args)
 
     args.cuda = torch.cuda.is_available() and not args.no_cuda
@@ -276,6 +310,28 @@ if __name__ == '__main__':
     else:
         print("There is no such dataset")
 
+    if args.checkpoint is not None:
+        map_location = 'cuda' if cuda else 'cpu'
+        checkpoint = torch.load(args.checkpoint, map_location=map_location)
+        model_state_dict = checkpoint['model_state_dict'] if 'model_state_dict' in checkpoint else checkpoint
+        model.load_state_dict(model_state_dict)
+        print('Loaded checkpoint: {}'.format(args.checkpoint))
+
+    if args.eval_only:
+        if args.checkpoint is None:
+            raise ValueError('--eval-only requires --checkpoint')
+
+        test_acc, test_label, test_pred, test_mask, test_fscore = evaluate_loaded_model(model, test_loader)
+        print('Checkpoint test performance..')
+        print('Acc: {}'.format(test_acc))
+        print('F-Score: {}'.format(test_fscore))
+        print(classification_report(test_label, test_pred, sample_weight=test_mask, digits=4))
+        print(confusion_matrix(test_label, test_pred, sample_weight=test_mask))
+
+        if args.tensorboard:
+            writer.close()
+        exit()
+
     best_fscore, best_loss, best_label, best_pred, best_mask = None, None, None, None, None
     best_acc = None
     all_fscore, all_acc, all_loss = [], [], []
@@ -292,21 +348,51 @@ if __name__ == '__main__':
                                                                                                      e)
         all_fscore.append(test_fscore)
 
+        is_best = False
         if best_fscore == None or best_fscore <= test_fscore:
             if best_fscore == None:
                 best_fscore = test_fscore
                 best_acc = test_acc
                 best_label, best_pred, best_mask = test_label, test_pred, test_mask
+                is_best = True
 
             elif best_acc < test_acc and best_fscore == test_fscore:
                 best_acc = test_acc
                 best_fscore = test_fscore
                 best_label, best_pred, best_mask = test_label, test_pred, test_mask
+                is_best = True
 
             elif best_fscore < test_fscore:
                 best_acc = test_acc
                 best_fscore = test_fscore
                 best_label, best_pred, best_mask = test_label, test_pred, test_mask
+                is_best = True
+
+        if is_best:
+            os.makedirs(args.save_best_dir, exist_ok=True)
+            checkpoint_path = os.path.join(args.save_best_dir, '{}_best.pt'.format(args.run_name))
+            torch.save({
+                'epoch': e + 1,
+                'best_acc': best_acc,
+                'best_fscore': best_fscore,
+                'model_state_dict': model.state_dict(),
+                'optimizer_state_dict': optimizer.state_dict(),
+                'args': vars(args).copy(),
+                'dataset': args.Dataset,
+                'seed': args.seed,
+                'classification_report': classification_report(
+                    best_label,
+                    best_pred,
+                    sample_weight=best_mask,
+                    digits=4
+                ),
+                'confusion_matrix': confusion_matrix(
+                    best_label,
+                    best_pred,
+                    sample_weight=best_mask
+                ).tolist(),
+            }, checkpoint_path)
+            print('Saved best checkpoint: {}'.format(checkpoint_path))
 
         if args.tensorboard:
             writer.add_scalar('test: accuracy', test_acc, e)
@@ -349,4 +435,3 @@ if __name__ == '__main__':
 
     print(classification_report(best_label, best_pred, sample_weight=best_mask, digits=4))
     print(confusion_matrix(best_label, best_pred, sample_weight=best_mask))
-
