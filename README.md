@@ -54,7 +54,7 @@ python train_MELD.py
 ```
 
 ## Testing and Checkpoints
-The implementation results may vary slightly due to differences in the experimental environment. We provide pre-trained checkpoints at here.
+The implementation results may vary slightly due to differences in the experimental environment. We provide pre-trained checkpoints at [here](https://drive.google.com/drive/folders/1tn7aR3sUIgSQ3zf7pMIMbcP2PGl3ErXm?usp=drive_link).
 
 For example, you can use checkpoints on IEMOCAP like this:
 ```bash
