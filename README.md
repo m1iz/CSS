@@ -52,6 +52,11 @@ You can train the model by running the corresponding training script:
 python train_IEMOCAP.py
 python train_MELD.py
 ```
+
+## Testing and Checkpoints
+
+
+
 ## Acknowledgements
 Special thanks to the authors of [SDT](https://github.com/butterfliesss/SDT?tab=readme-ov-file) for open-sourcing their code and datasets. 🤗🤗🤗
 
