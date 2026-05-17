@@ -54,9 +54,12 @@ python train_MELD.py
 ```
 
 ## Testing and Checkpoints
+The implementation results may vary slightly due to differences in the experimental environment. We provide pre-trained checkpoints at here.
 
-
-
+For example, you can use checkpoints on IEMOCAP like this:
+```bash
+python train_IEMOCAP.py --checkpoint iemocap.pt --eval-only
+```
 ## Acknowledgements
 Special thanks to the authors of [SDT](https://github.com/butterfliesss/SDT?tab=readme-ov-file) for open-sourcing their code and datasets. 🤗🤗🤗
 
