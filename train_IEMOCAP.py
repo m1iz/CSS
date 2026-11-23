@@ -8,19 +8,83 @@ from sklearn.manifold import TSNE
 import numpy as np, argparse, time
 import torch
 import torch.optim as optim
-from utils import (
-    MaskedNLLLoss, MaskedKLDivLoss,
-    get_IEMOCAP_loaders, get_MELD_loaders, get_train_valid_sampler,
-    set_iemocap_seed as set_seed,
-)
-from model import Transformer_Based_Model, PGM
+from torch.utils.data import DataLoader
+from torch.utils.data.sampler import SubsetRandomSampler
+from dataloader import IEMOCAPDataset, MELDDataset
+from model import MaskedNLLLoss, MaskedKLDivLoss, Transformer_Based_Model, PGM
 from sklearn.metrics import f1_score, confusion_matrix, accuracy_score, classification_report
 import pickle as pk
 import datetime
 torch.backends.cudnn.enabled = False
 #
+def set_seed(seed=61078):
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+    if torch.cuda.is_available():
+        torch.cuda.manual_seed(seed)
+        torch.cuda.manual_seed_all(seed)
+    torch.backends.cudnn.enabled = False
+    torch.backends.cudnn.deterministic = True
+    torch.backends.cudnn.benchmark = False
 
 set_seed()
+
+def get_train_valid_sampler(trainset, valid=0.1, dataset='MELD'):
+    size = len(trainset)
+    idx = list(range(size))
+    split = int(valid * size)
+    return SubsetRandomSampler(idx[split:]), SubsetRandomSampler(idx[:split])
+
+
+def get_MELD_loaders(batch_size=32, valid=0.1, num_workers=0, pin_memory=False):
+    trainset = MELDDataset('data/meld_multimodal_features.pkl')
+    train_sampler, valid_sampler = get_train_valid_sampler(trainset, valid, 'MELD')
+    train_loader = DataLoader(trainset,
+                              batch_size=batch_size,
+                              sampler=train_sampler,
+                              collate_fn=trainset.collate_fn,
+                              num_workers=num_workers,
+                              pin_memory=pin_memory)
+    valid_loader = DataLoader(trainset,
+                              batch_size=batch_size,
+                              sampler=valid_sampler,
+                              collate_fn=trainset.collate_fn,
+                              num_workers=num_workers,
+                              pin_memory=pin_memory)
+
+    testset = MELDDataset('data/meld_multimodal_features.pkl', train=False)
+    test_loader = DataLoader(testset,
+                             batch_size=batch_size,
+                             collate_fn=testset.collate_fn,
+                             num_workers=num_workers,
+                             pin_memory=pin_memory)
+    return train_loader, valid_loader, test_loader
+
+
+def get_IEMOCAP_loaders(batch_size=32, valid=0.1, num_workers=0, pin_memory=False):
+    trainset = IEMOCAPDataset()
+    train_sampler, valid_sampler = get_train_valid_sampler(trainset, valid)
+    train_loader = DataLoader(trainset,
+                              batch_size=batch_size,
+                              sampler=train_sampler,
+                              collate_fn=trainset.collate_fn,
+                              num_workers=num_workers,
+                              pin_memory=pin_memory)
+    valid_loader = DataLoader(trainset,
+                              batch_size=batch_size,
+                              sampler=valid_sampler,
+                              collate_fn=trainset.collate_fn,
+                              num_workers=num_workers,
+                              pin_memory=pin_memory)
+
+    testset = IEMOCAPDataset(train=False)
+    test_loader = DataLoader(testset,
+                             batch_size=batch_size,
+                             collate_fn=testset.collate_fn,
+                             num_workers=num_workers,
+                             pin_memory=pin_memory)
+    return train_loader, valid_loader, test_loader
+
 
 def train_or_eval_model(model, loss_function, kl_loss, dataloader, epoch, optimizer=None, train=False):
     losses, preds, labels, masks = [], [], [], []
