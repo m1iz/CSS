@@ -6,7 +6,38 @@ import torch.nn as nn
 import torch.nn.functional as F
 from pyarrow.dataset import dataset
 from torch.nn.functional import dropout
-from utils import MaskedKLDivLoss, MaskedNLLLoss, gelu
+
+
+class MaskedKLDivLoss(nn.Module):
+    def __init__(self):
+        super(MaskedKLDivLoss, self).__init__()
+        self.loss = nn.KLDivLoss(reduction='sum')
+
+    def forward(self, log_pred, target, mask):
+        mask_ = mask.view(-1, 1)
+
+        masked_log_pred = torch.where(mask_ > 0, log_pred, torch.zeros_like(log_pred))
+        masked_target = torch.where(mask_ > 0, target, torch.zeros_like(target))
+
+        loss = self.loss(masked_log_pred, masked_target) / torch.sum(mask)
+
+        return loss
+
+
+class MaskedNLLLoss(nn.Module):
+    def __init__(self, weight=None):
+        super(MaskedNLLLoss, self).__init__()
+        self.weight = weight
+        self.loss = nn.NLLLoss(weight=weight, reduction='sum')
+
+    def forward(self, pred, target, mask):
+        mask_ = mask.view(-1, 1)
+        if type(self.weight) == type(None):
+            loss = self.loss(pred * mask_, target) / torch.sum(mask)
+        else:
+            loss = self.loss(pred * mask_, target) \
+                   / torch.sum(self.weight[target] * mask_.squeeze())
+        return loss
 
 
 class PGM(nn.Module):
@@ -104,6 +135,10 @@ class PGM(nn.Module):
         total_loss = sum(w * l for w, l in zip(weights, losses))
 
         return total_loss, weights, losses
+
+def gelu(x):
+    return 0.5 * x * (1 + torch.tanh(math.sqrt(2 / math.pi) * (x + 0.044715 * torch.pow(x, 3))))
+
 
 class PositionwiseFeedForward(nn.Module):
     def __init__(self, d_model, d_ff, dropout=0.1):
